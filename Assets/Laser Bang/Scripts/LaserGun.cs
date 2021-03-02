@@ -6,72 +6,61 @@ using FateGames;
 public class LaserGun : MonoBehaviour
 {
     [SerializeField] private GameObject laserPrefab = null;
+    [SerializeField] private int previewReflection = 1;
 
     private bool isLaserSend = false;
     private LaserBangLevel levelManager;
-    private Mirror mirror;
-    private Target target;
-    private GameObject laserPreview;
-    private GameObject laser;
-    private RaycastHit hit;
-    private Vector3 direction;
-    private Vector3 cameraTarget;
-    private Vector3 position;
+    private List<GameObject> laserPreviews;
 
     private void Awake()
     {
-        position = transform.position;
         levelManager = (LaserBangLevel)LevelManager.Instance;
+        laserPreviews = new List<GameObject>();
     }
-
-    void Start()
-    {
-        
-    }
-
 
     void Update()
     {
         if (!isLaserSend)
         {
-            UpdateCameraTarget();
-            Preview();
+            CleanPreview();
+            UpdateDirection();
+            Preview(transform.position, transform.forward, previewReflection);
             CheckShoot();
         }
     }
 
     private void Shoot(Vector3 pos, Vector3 dir)
     {
-        // atýþ
-        if (Physics.Raycast(pos, dir, out hit, Mathf.Infinity))
+        if (Physics.Raycast(pos, dir, out RaycastHit hit, Mathf.Infinity))
         {
-            laser = Instantiate(laserPrefab, pos, Quaternion.LookRotation(dir));
-            laser.transform.localScale = new Vector3(laser.transform.localScale.x, laser.transform.localScale.y, laser.transform.localScale.z * hit.distance);
-
-            // ayna kontrol
-            mirror = hit.transform.GetComponent<Mirror>();
-            if (mirror)
+            GameObject laser = Instantiate(laserPrefab, pos, Quaternion.LookRotation(dir));
+            laser.LeanScaleZ(hit.distance, 0.1f).setOnComplete(() =>
             {
-                // açý ayarý, tekrar atýþ
-                LeanTween.delayedCall(0.35f, () =>
+                Mirror mirror = hit.transform.GetComponent<Mirror>();
+                if (mirror)
                 {
-                    Shoot(hit.point, Vector3.Reflect(dir, hit.normal));
-                });
-            } 
-            else
-            {
-                target = hit.transform.GetComponent<Target>();
-                if(target)
-                {
-                    print("win");
-                    levelManager.FinishLevel(true);
+                    LeanTween.delayedCall(0.1f, () =>
+                    {
+                        Shoot(hit.point, Vector3.Reflect(dir, hit.normal));
+                    });
                 }
                 else
                 {
-                    print("lose");
-                    levelManager.FinishLevel(false);
+                    Target target = hit.transform.GetComponent<Target>();
+                    LeanTween.delayedCall(0.5f, () =>
+                    {
+                        levelManager.FinishLevel(target != null);
+                    });
                 }
-            }
+            });
+        }
+    }
+
+    private void CleanPreview()
+    {
+        for (int i = 0; i < laserPreviews.Count; i++)
+        {
+            Destroy(laserPreviews[i]);
         }
     }
 
@@ -79,31 +68,37 @@ public class LaserGun : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            CleanPreview();
             isLaserSend = true;
-            Destroy(laserPreview);
-            Shoot(position, direction);
+            Shoot(transform.position, transform.forward);
         }
     }
 
-    private void UpdateCameraTarget()
+    private void UpdateDirection()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitData, 1000))
         {
-            cameraTarget = new Vector3(hitData.point.x, position.y, hitData.point.z);
+            Vector3 cameraTarget = new Vector3(hitData.point.x, transform.position.y, hitData.point.z);
+            Vector3 direction = (cameraTarget - transform.position).normalized;
+            transform.rotation = Quaternion.LookRotation(direction);
         }
     }
 
-    private void Preview()
+    private void Preview(Vector3 pos, Vector3 dir , int n)
     {
-        //Debug.DrawRay(position, direction);
-
-        direction = (cameraTarget - position).normalized;
-        if (Physics.Raycast(position, direction, out hit, Mathf.Infinity))
+        if (Physics.Raycast(pos, dir, out RaycastHit hit, Mathf.Infinity))
         {
-            Destroy(laserPreview);
-            laserPreview = Instantiate(laserPrefab, position, Quaternion.LookRotation(direction));
-            laserPreview.transform.localScale = new Vector3(laserPreview.transform.localScale.x, laserPreview.transform.localScale.y, laserPreview.transform.localScale.z * hit.distance);
+            GameObject laserPreview = Instantiate(laserPrefab, pos, Quaternion.LookRotation(dir));
+            laserPreviews.Add(laserPreview);
+            Vector3 newScale = laserPreview.transform.localScale;
+            newScale.z = hit.distance;
+            laserPreview.transform.localScale = newScale;
+            Mirror mirror = hit.transform.GetComponent<Mirror>();
+            if (mirror && (n > 0))
+            {
+                Preview(hit.point, Vector3.Reflect(dir, hit.normal), n-1);
+            }
         }
     }
 }

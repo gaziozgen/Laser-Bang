@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 3527699773775806845}
   - component: {fileID: 3527699773775806844}
   m_Layer: 0
-  m_Name: mesh
+  m_Name: LaserMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -90,7 +90,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c03d8e119d245bd46b097aed3bf85d4d, type: 2}
+  - {fileID: 2100000, guid: d0d0d4dd34b25f14a88332586bd23930, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
