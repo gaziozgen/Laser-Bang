@@ -6,7 +6,8 @@ using FateGames;
 public class LaserGun : MonoBehaviour
 {
     [SerializeField] private GameObject laserPrefab = null;
-    [SerializeField] private int previewReflection = 1;
+    [SerializeField] private GameObject laserPreviewPrefab = null;
+    [SerializeField] private int previewReflection = 2;
 
     private bool isLaserSend = false;
     private LaserBangLevel levelManager;
@@ -89,7 +90,7 @@ public class LaserGun : MonoBehaviour
     {
         if (Physics.Raycast(pos, dir, out RaycastHit hit, Mathf.Infinity))
         {
-            GameObject laserPreview = Instantiate(laserPrefab, pos, Quaternion.LookRotation(dir));
+            GameObject laserPreview = Instantiate(laserPreviewPrefab, pos, Quaternion.LookRotation(dir));
             laserPreviews.Add(laserPreview);
             Vector3 newScale = laserPreview.transform.localScale;
             newScale.z = hit.distance;

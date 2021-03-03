@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class LevelGenerator : MonoBehaviour
 {
-
-
+    [SerializeField] private GameObject Mirror = null;
+    [SerializeField] private GameObject Engel = null;
+    [SerializeField] private GameObject Hedef = null;
 
     void Awake()
     {
