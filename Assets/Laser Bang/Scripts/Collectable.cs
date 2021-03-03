@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using FateGames;
 
 public class Collectable : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    private LaserBangLevel levelManager;
+    void Awake()
     {
-        
+        levelManager = (LaserBangLevel)LevelManager.Instance;
     }
 
     // Update is called once per frame
@@ -21,13 +23,13 @@ public class Collectable : MonoBehaviour
         Laser laser = other.transform.GetComponent<Laser>();
         if (laser)
         {
-            print("asdasd");
-            Animate();
+            Collected();
         }
     }
 
-    private void Animate()
+    private void Collected()
     {
+        levelManager.AddScore(1);
         transform.LeanMoveLocalY(2f, 0.3f);
         transform.LeanRotateY(90f, 0.3f).setOnComplete(() =>
         {

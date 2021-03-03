@@ -35,7 +35,10 @@ public class LaserGun : MonoBehaviour
         if (Physics.Raycast(pos, dir, out RaycastHit hit, Mathf.Infinity))
         {
             GameObject laser = Instantiate(laserPrefab, pos, Quaternion.LookRotation(dir));
-            laser.LeanScaleZ(hit.distance, 0.1f).setOnComplete(() =>
+            laser.LeanScaleZ(hit.distance, 0.1f)
+                .setEaseInCubic()
+                
+                .setOnComplete(() =>
             {
                 Mirror mirror = hit.transform.GetComponent<Mirror>();
                 if (mirror)

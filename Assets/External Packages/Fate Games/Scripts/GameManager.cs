@@ -40,6 +40,8 @@ namespace FateGames
         [SerializeField] private GameObject successTextPrefab = null;
         [SerializeField] private GameObject instructionTextPrefab = null;
         [SerializeField] private GameObject[] emojiEffectPrefabs = null;
+
+
         #endregion
 
         #region Unity Callbacks
@@ -89,6 +91,12 @@ namespace FateGames
         }
 
         #endregion
+
+        public int Gold
+        {
+            get => PlayerPrefs.GetInt("Gold");
+            set => PlayerPrefs.SetInt("Gold", value);
+        }
 
         private void CheckInput()
         {
