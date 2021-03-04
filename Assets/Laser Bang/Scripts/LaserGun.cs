@@ -7,9 +7,9 @@ public class LaserGun : MonoBehaviour
 {
     [SerializeField] private GameObject laserPrefab = null;
     [SerializeField] private GameObject laserPreviewPrefab = null;
-    [SerializeField] private int previewReflection = 2;
+    [SerializeField] private int previewReflection = 1;
+    private int localPreviewReflection;
 
-    private bool isLaserSend = false;
     private LaserBangLevel levelManager;
     private List<GameObject> laserPreviews;
 
@@ -17,20 +17,10 @@ public class LaserGun : MonoBehaviour
     {
         levelManager = (LaserBangLevel)LevelManager.Instance;
         laserPreviews = new List<GameObject>();
+        localPreviewReflection = previewReflection;
     }
 
-    void Update()
-    {
-        if (!isLaserSend)
-        {
-            CleanPreview();
-            UpdateDirection();
-            Preview(transform.position, transform.forward, previewReflection);
-            CheckShoot();
-        }
-    }
-
-    private void Shoot(Vector3 pos, Vector3 dir)
+    public void Shoot(Vector3 pos, Vector3 dir)
     {
         if (Physics.Raycast(pos, dir, out RaycastHit hit, Mathf.Infinity))
         {
@@ -60,7 +50,7 @@ public class LaserGun : MonoBehaviour
         }
     }
 
-    private void CleanPreview()
+    public void CleanPreview()
     {
         for (int i = 0; i < laserPreviews.Count; i++)
         {
@@ -68,28 +58,7 @@ public class LaserGun : MonoBehaviour
         }
     }
 
-    private void CheckShoot()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            CleanPreview();
-            isLaserSend = true;
-            Shoot(transform.position, transform.forward);
-        }
-    }
-
-    private void UpdateDirection()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hitData, 1000))
-        {
-            Vector3 cameraTarget = new Vector3(hitData.point.x, transform.position.y, hitData.point.z);
-            Vector3 direction = (cameraTarget - transform.position).normalized;
-            transform.rotation = Quaternion.LookRotation(direction);
-        }
-    }
-
-    private void Preview(Vector3 pos, Vector3 dir , int n)
+    public void Preview(Vector3 pos, Vector3 dir)
     {
         if (Physics.Raycast(pos, dir, out RaycastHit hit, Mathf.Infinity))
         {
@@ -99,9 +68,14 @@ public class LaserGun : MonoBehaviour
             newScale.z = hit.distance;
             laserPreview.transform.localScale = newScale;
             Mirror mirror = hit.transform.GetComponent<Mirror>();
-            if (mirror && (n > 0))
+            if (mirror && (localPreviewReflection > 0))
             {
-                Preview(hit.point, Vector3.Reflect(dir, hit.normal), n-1);
+                localPreviewReflection -= 1;
+                Preview(hit.point, Vector3.Reflect(dir, hit.normal));
+            } 
+            else 
+            {
+                localPreviewReflection = previewReflection;
             }
         }
     }
